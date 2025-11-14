@@ -83,19 +83,19 @@ SESSION 1 (Dashboard Opened)
 │                    LIVE METRICS SECTION                         │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  Power Draw: 500 W  ← From Tuya API (real-time)               │
+│  Power Draw: 500 W  ← From Tuya API (real-time)                 │
 │                                                                 │
-│  Total Energy: 0.001 kWh  ← From session memory                │
-│  [This dashboard session only]                                 │
-│  = Sum of all kWh_increment since page loaded                 │
+│  Total Energy: 0.001 kWh  ← From session memory                 │
+│  [This dashboard session only]                                  │
+│  = Sum of all kWh_increment since page loaded                   │
 │                                                                 │
-│  Hourly Cost: $0.075/hr  ← Calculated from current power      │
-│  = (watts / 1000) × rate/kWh                                   │
-│  = (500 / 1000) × $0.15 = $0.075                              │
+│  Hourly Cost: $0.075/hr  ← Calculated from current power        │
+│  = (watts / 1000) × rate/kWh                                    │
+│  = (500 / 1000) × $0.15 = $0.075                                │
 │                                                                 │
-│  Daily Projection: $1.80  ← Projected for full 24 hours       │
-│  = (currentDayCost) + (hourlyCost × hoursRemaining)           │
-│  = $0.00 + ($0.075 × 24) = $1.80                              │
+│  Daily Projection: $1.80  ← Projected for full 24 hours         │
+│  = (currentDayCost) + (hourlyCost × hoursRemaining)             │
+│  = $0.00 + ($0.075 × 24) = $1.80                                │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 
@@ -103,24 +103,24 @@ SESSION 1 (Dashboard Opened)
 │               SUMMARY SECTION (from MongoDB)                    │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  Peak Usage: 500 W  ← max(powerData.watts) from session       │
+│  Peak Usage: 500 W  ← max(powerData.watts) from session         │
 │                                                                 │
-│  Average Usage: 500 W  ← mean of all watts from session       │
+│  Average Usage: 500 W  ← mean of all watts from session         │
 │                                                                 │
-│  Total Energy: 0.001 kWh  ← sum of all kWh_increment         │
+│  Total Energy: 0.001 kWh  ← sum of all kWh_increment            │
 │                                                                 │
-│  Total Cost: $0.00015  ← Total Energy × rate                  │
-│  = 0.001 kWh × $0.15                                          │
+│  Total Cost: $0.00015  ← Total Energy × rate                    │
+│  = 0.001 kWh × $0.15                                            │
 │                                                                 │
-│  *** TODAY'S COST: $0.42 ***  ← FROM DATABASE                │
-│  [All readings stored since 00:00 today]                      │
-│  = SELECT SUM(kWh) FROM readings WHERE timestamp TODAY        │
-│    THEN multiply by electricity rate                           │
+│  *** TODAY'S COST: $0.42 ***  ← FROM DATABASE                   │
+│  [All readings stored since 00:00 today]                        │
+│  = SELECT SUM(kWh) FROM readings WHERE timestamp TODAY          │
+│    THEN multiply by electricity rate                            │
 │                                                                 │
-│  *** THIS WEEK'S COST: $2.85 ***  ← FROM DATABASE            │
-│  [All readings stored in last 7 days]                         │
-│  = SELECT SUM(kWh) FROM readings WHERE timestamp LAST 7 DAYS  │
-│    THEN multiply by electricity rate                           │
+│  *** THIS WEEK'S COST: $2.85 ***  ← FROM DATABASE               │
+│  [All readings stored in last 7 days]                           │
+│  = SELECT SUM(kWh) FROM readings WHERE timestamp LAST 7 DAYS    │
+│    THEN multiply by electricity rate                            │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -149,25 +149,25 @@ Device Power Draw Over 1 Hour (500W constant)
 ┌─────────────────────────────────────────────────────────┐
 │ MEMORY (Session Data)                                   │
 ├─────────────────────────────────────────────────────────┤
-│ powerData.cumulativeKWh = 0.5 kWh                      │
-│ powerData.watts = [500, 500, 500, ...]                 │
-│ powerData.kwh = [0.00069, 0.00069, ...]                │
-│ powerData.labels = ["10:00", "10:05", ...]             │
+│ powerData.cumulativeKWh = 0.5 kWh                       │
+│ powerData.watts = [500, 500, 500, ...]                  │
+│ powerData.kwh = [0.00069, 0.00069, ...]                 │
+│ powerData.labels = ["10:00", "10:05", ...]              │
 └─────────────────────────────────────────────────────────┘
 
          ↓↓↓ STORED IN DATABASE ↓↓↓
 
 ┌─────────────────────────────────────────────────────────┐
-│ MONGODB: energy_readings Collection                    │
+│ MONGODB: energy_readings Collection                     │
 ├─────────────────────────────────────────────────────────┤
-│ Reading 1: {watts: 500, kWh: 0.00069, ...}             │
-│ Reading 2: {watts: 500, kWh: 0.00069, ...}             │
-│ Reading 3: {watts: 500, kWh: 0.00069, ...}             │
-│ ... (one entry every 5 seconds = 720 readings/hour)    │
-│ Reading 720: {watts: 500, kWh: 0.00069, ...}           │
-│                                                        │
-│ SUM(kWh) = 720 × 0.00069 = 0.5 kWh                    │
-│ SUM(cost) = 0.5 × 0.15 = $0.075 (for 1 hour)         │
+│ Reading 1: {watts: 500, kWh: 0.00069, ...}              │
+│ Reading 2: {watts: 500, kWh: 0.00069, ...}              │
+│ Reading 3: {watts: 500, kWh: 0.00069, ...}              │
+│ ... (one entry every 5 seconds = 720 readings/hour)     │
+│ Reading 720: {watts: 500, kWh: 0.00069, ...}            │
+│                                                         │
+│ SUM(kWh) = 720 × 0.00069 = 0.5 kWh                      │
+│ SUM(cost) = 0.5 × 0.15 = $0.075 (for 1 hour)            │
 └─────────────────────────────────────────────────────────┘
 
          ↓↓↓ RETRIEVED BY ↓↓↓
@@ -175,10 +175,10 @@ Device Power Draw Over 1 Hour (500W constant)
 ┌─────────────────────────────────────────────────────────┐
 │ calculateDailyCost() / calculateWeeklyCost()            │
 ├─────────────────────────────────────────────────────────┤
-│ Fetches all readings from today (or last 7 days)       │
-│ Sums up all the kWh values                             │
-│ Multiplies by electricityRate                          │
-│ Returns total cost for display                         │
+│ Fetches all readings from today (or last 7 days)        │
+│ Sums up all the kWh values                              │
+│ Multiplies by electricityRate                           │
+│ Returns total cost for display                          │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -595,18 +595,18 @@ Browser                  Function               Backend
   │                    Reset timestamp             │
   │                         │                      │
   │ fetch store-energy-data │                      │
-  ├─────────────────────────────────────────────→ │ Query Device 2 data
+  ├─────────────────────────────────────────────→  │ Query Device 2 data
   │                         │        Response      │ (last 24 hours)
-  │ ← ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ←  │
+  │ ← ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ --- -─ ← │
   │  processHistoricalData  │                      │
   │                    Load charts                 │
   │                         │                      │
   │ fetch get-smart-plug-data                      │
   ├──────────────────────────────────────────────→ │ Get Device 2
   │                         │        Response      │ current power
-  │ ← ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ←  │
-  │ Display Device 2 data  │                      │
-  │ Update button state    │                      │
+  │ ← ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ----------←│
+  │ Display Device 2 data   │                      │
+  │ Update button state     │                      │
   │                         │                      │
   ✅ Device 2 fully loaded
 ```
@@ -616,13 +616,13 @@ Browser                  Function               Backend
 ```
 Browser                  Function               Backend
   │                         │                      │
-  ├─ User clicks button      │                      │
+  ├─ User clicks button     │                      │
   │                         │                      │
   │ toggleDevice()          │                      │
   ├─────────────────────────┤                      │
   │                   Send POST                    │
-  │  {action: "toggle",      │                      │
-  │   deviceId: "d2"}        │                      │
+  │  {action: "toggle",     │                      │
+  │   deviceId: "d2"}       │                      │
   │                         │                      │
   │                   fetch POST                   │
   ├──────────────────────────────────────────────→ │ Toggle Device 2
@@ -635,7 +635,7 @@ Browser                  Function               Backend
   │ Update button: "Turn ON"│                      │
   │ resetPowerData()        │                      │
   │                         │                      │
-  │ fetch get-smart-plug-data                     │
+  │ fetch get-smart-plug-data                      │
   ├──────────────────────────────────────────────→ │ Get Device 2
   │                         │        Response      │ (now OFF)
   │ ← ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ←  │ {watts: 0}
