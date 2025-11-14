@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Energy Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="p-6 md:p-10">
+    <div class="max-w-7xl mx-auto">
+      <!-- Header -->
+      <header class="mb-12">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1
+              class="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight"
+            >
+              Energy Monitor
+            </h1>
+            <p class="text-gray-800 mt-2 font-light">
+              Real-time appliance tracking and insights
+            </p>
+          </div>
+          <div class="text-right">
+            <div class="text-sm text-gray-800">Status</div>
+            <div class="flex items-center gap-2 mt-1">
+              <div
+                class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
+              ></div>
+              <span id="api-status" class="text-sm font-medium text-gray-700"
+                >Active</span
+              >
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="lg:flex-row gap-6">
+        <!-- Control Panel -->
+        <div class="control-box flex-1">
+          <!-- Device Control Card -->
+          <div class="card rounded-2xl p-6 device">
+            <h2 class="text-lg font-semibold text-gray-900 mb-6">Control</h2>
+
+            <div class="space-y-4">
+              <!-- Device Selector -->
+              <div>
+                <label
+                  class="text-xs uppercase tracking-wider text-gray-800 font-medium mb-2 block"
+                  >Device</label
+                >
+                <select
+                  id="device-selector"
+                  class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:bg-white focus:border-indigo-500 transition-all"
+                  onchange="changeDevice(this.value)"
+                >
+                  <option value="">Loading devices...</option>
+                </select>
+              </div>
+
+              <!-- Power Toggle -->
+              <div>
+                <label
+                  class="text-xs uppercase tracking-wider text-gray-800 font-medium mb-2 block"
+                  >Power</label
+                >
+                <button
+                  id="toggle-button"
+                  class="w-full px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-green-800 btn"
+                  onclick="toggleDevice()"
+                >
+                  Turn OFF
+                </button>
+              </div>
+
+              <!-- Electricity Rate -->
+              <div>
+                <label
+                  class="text-xs uppercase tracking-wider text-gray-800 font-medium mb-2 block"
+                  >Rate (৳/kWh)</label
+                >
+                <div class="relative">
+                  <span class="absolute left-4 top-3.5 text-gray-500">৳</span>
+                  <input
+                    type="number"
+                    id="electricity-rate"
+                    class="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:bg-white focus:border-indigo-500 transition-all"
+                    step="0.01"
+                    min="0"
+                    placeholder="9.5"
+                    onchange="updateElectricityRate(this.value)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Metrics Card -->
+          <div class="card rounded-2xl p-6 metrics">
+            <h2 class="text-lg font-semibold text-gray-900 mb-6">
+              Live Metrics
+            </h2>
+
+            <div class="space-y-5">
+              <div class="power-box-1">
+                <!-- Current Power -->
+                <div
+                  class="stat-card rounded-xl p-4 bg-gradient-to-br from-gray-50 to-gray-100/50"
+                >
+                  <div
+                    class="text-xs uppercase tracking-wider text-gray-800 font-medium mb-1"
+                  >
+                    Power Draw
+                  </div>
+                  <div
+                    class="metric-value text-3xl text-gray-900"
+                    id="current-watts"
+                  >
+                    0 W
+                  </div>
+                </div>
+
+                <!-- Total Energy -->
+                <div
+                  class="stat-card rounded-xl p-4 bg-gradient-to-br from-gray-50 to-gray-100/50"
+                >
+                  <div
+                    class="text-xs uppercase tracking-wider text-gray-800 font-medium mb-1"
+                  >
+                    Total Energy
+                  </div>
+                  <div
+                    class="metric-value text-3xl text-gray-900"
+                    id="total-kwh"
+                  >
+                    0.00 kWh
+                  </div>
+                </div>
+              </div>
+
+              <div class="power-box-2">
+                <!-- Hourly Cost -->
+                <div
+                  class="stat-card rounded-xl p-4 bg-gradient-to-br from-gray-50 to-gray-100/50"
+                >
+                  <div
+                    class="text-xs uppercase tracking-wider text-gray-800 font-medium mb-1"
+                  >
+                    Hourly Cost
+                  </div>
+                  <div
+                    class="metric-value text-3xl text-gray-900"
+                    id="hourly-cost"
+                  >
+                    ৳0.00/hr
+                  </div>
+                </div>
+
+                <!-- Daily Cost -->
+                <div
+                  class="stat-card rounded-xl p-4 bg-gradient-to-br from-indigo-50 to-purple-50"
+                >
+                  <div
+                    class="text-xs uppercase tracking-wider text-indigo-600 font-medium mb-1"
+                  >
+                    Daily Projection
+                  </div>
+                  <div
+                    class="metric-value text-3xl text-indigo-900"
+                    id="daily-cost"
+                  >
+                    ৳0.00
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="mt-6 pt-4 border-t border-gray-100 text-xs text-gray-500"
+            >
+              Last update:
+              <span id="last-update" class="font-medium text-gray-700">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Power Chart -->
+        <div class="power-draw-box flex-1 card rounded-2xl p-6 md:p-8">
+          <h2 class="text-lg font-semibold text-gray-900 mb-6">Power Draw</h2>
+          <canvas id="powerChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Energy Trend Chart -->
+      <div class="mt-6 card rounded-2xl p-6 md:p-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-6">
+          Energy Usage Trend
+        </h2>
+        <canvas id="energyChart"></canvas>
+      </div>
+
+      <!-- Analytics Section -->
+      <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Efficiency Score -->
+        <div class="card rounded-2xl p-6">
+          <h3 class="text-sm font-medium text-gray-500 mb-4">
+            Efficiency Score
+          </h3>
+          <div class="flex items-end justify-between">
+            <div
+              class="metric-value text-5xl text-gray-900"
+              id="efficiency-score"
+            >
+              --
+            </div>
+            <div class="text-sm text-gray-500 mb-1" id="efficiency-label">
+              Analyzing...
+            </div>
+          </div>
+        </div>
+
+        <!-- Cost Insights -->
+        <div class="card rounded-2xl p-6">
+          <h3 class="text-sm font-medium text-gray-500 mb-4">Cost Insights</h3>
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Today vs Yesterday</span>
+              <span class="font-medium text-gray-900" id="cost-comparison"
+                >--</span
+              >
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Monthly Projection</span>
+              <span class="font-medium text-gray-900" id="projected-cost"
+                >--</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Smart Tips -->
+        <div class="card rounded-2xl p-6">
+          <h3 class="text-sm font-medium text-gray-500 mb-4">Smart Tips</h3>
+          <ul id="energy-tips" class="space-y-2 text-sm text-gray-600">
+            <li>Loading recommendations...</li>
+          </ul>
+          <div id="tip-count" class="text-xs text-gray-400 mt-4">
+            0 Active Tips
+          </div>
+          <div id="usage-explanation" class="text-sm text-gray-600 mt-2"></div>
+          <span id="rate-per-kwh" class="hidden">0</span>
+        </div>
+      </div>
+
+      <!-- Usage Analysis -->
+      <div class="mt-6 card rounded-2xl p-6 md:p-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-6">Usage Analysis</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <div class="text-sm font-medium text-gray-900 mb-3">
+              Peak Usage Times
+            </div>
+            <div id="peak-times" class="text-sm text-gray-600">
+              Analyzing...
+            </div>
+          </div>
+          <div>
+            <div class="text-sm font-medium text-gray-900 mb-3">
+              Standby Power Detection
+            </div>
+            <div id="standby-detection" class="text-sm text-gray-600">
+              Monitoring...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historical Data Section -->
+      <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Daily Summary -->
+        <div class="card rounded-2xl p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg font-semibold text-gray-900">Summary</h2>
+            <select
+              id="history-timeframe"
+              class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:border-indigo-500 transition-all"
+              onchange="setSummaryRange(this.value)"
+            >
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="last7">Last 7 Days</option>
+              <option value="last30">Last 30 Days</option>
+            </select>
+          </div>
+
+          <div class="space-y-3">
+            <div
+              class="flex justify-between items-center p-3 rounded-lg bg-gray-50"
+            >
+              <span class="text-sm text-gray-600">Peak Usage</span>
+              <span class="font-semibold text-gray-900" id="peak-usage"
+                >--</span
+              >
+            </div>
+            <div
+              class="flex justify-between items-center p-3 rounded-lg bg-gray-50"
+            >
+              <span class="text-sm text-gray-600">Average Usage</span>
+              <span class="font-semibold text-gray-900" id="avg-usage">--</span>
+            </div>
+            <div
+              class="flex justify-between items-center p-3 rounded-lg bg-gray-50"
+            >
+              <span class="text-sm text-gray-600">Total Energy</span>
+              <span class="font-semibold text-gray-900" id="total-usage"
+                >--</span
+              >
+            </div>
+            <div
+              class="flex justify-between items-center p-3 rounded-lg bg-gray-50"
+            >
+              <span class="text-sm text-gray-600">Total Cost</span>
+              <span class="font-semibold text-gray-900" id="total-cost"
+                >--</span
+              >
+            </div>
+            <div
+              class="flex justify-between items-center p-3 rounded-lg bg-gray-50"
+            >
+              <span class="text-sm text-gray-600">Today's Cost</span>
+              <span class="font-semibold text-gray-900" id="today-cost"
+                >--</span
+              >
+            </div>
+            <div
+              class="flex justify-between items-center p-3 rounded-lg bg-gray-50"
+            >
+              <span class="text-sm text-gray-600">This Week's Cost</span>
+              <span class="font-semibold text-gray-900" id="week-cost">--</span>
+            </div>
+          </div>
+
+          <!-- Summary Chart -->
+          <div class="mt-6 pt-4 border-t border-gray-100">
+            <canvas id="summaryChart" class="w-full h-32"></canvas>
+          </div>
+
+          <!-- Export Options -->
+          <div
+            class="mt-6 pt-4 border-t border-gray-100 flex justify-end gap-2"
+          >
+            <button
+              onclick="exportData('csv')"
+              class="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 btn"
+            >
+              Export CSV
+            </button>
+            <button
+              onclick="exportData('json')"
+              class="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 btn"
+            >
+              Export JSON
+            </button>
+          </div>
+        </div>
+
+        <!-- Usage Patterns -->
+        <div class="card rounded-2xl p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-6">
+            Usage Patterns
+          </h2>
+          <canvas id="patternsChart"></canvas>
+          <div class="mt-6 pt-4 border-t border-gray-100">
+            <h3 class="text-sm font-medium text-gray-900 mb-3">
+              Peak Usage Hours
+            </h3>
+            <ul id="peak-hours-list" class="space-y-1 text-sm text-gray-600">
+              <li>Loading usage patterns...</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./historical-data.js"></script>
+    <script src="./cost-calculator.js"></script>
+    <script src="./main.js"></script>
+  </body>
+</html>

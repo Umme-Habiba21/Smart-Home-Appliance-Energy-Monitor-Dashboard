@@ -1,0 +1,164 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+body {
+  font-family: "Inter", sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  min-height: 100vh;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  width: 47%;
+}
+
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+input:focus,
+select:focus,
+button:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: #6366f1;
+}
+
+.btn {
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.metric-value {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Layout for control section */
+.control-box {
+  display: flex;
+  flex-direction: row;
+}
+
+/* Make the device + metrics cards sit side-by-side */
+.control-box .device {
+  display: inline-block;
+  vertical-align: top;
+  box-sizing: border-box;
+}
+.control-box .metrics {
+  width: 48%;
+  display: inline-block;
+  vertical-align: top;
+  box-sizing: border-box;
+}
+
+/* Row layout for the two top cards */
+.control-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.4rem; /* adjust gap between cards */
+}
+
+/* Ensure the first two cards share the same row */
+.control-box .device,
+.control-box .metrics {
+  flex: 1 1 calc(50% - 0.75rem); /* 50% minus half the gap */
+
+  .power-box-1 {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .power-box-2 {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
+/* Make power draw box appear below them, full width */
+.power-draw-box {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+/* === MOBILE RESPONSIVE === */
+@media (max-width: 768px) {
+  .control-box {
+    flex-direction: column;
+  }
+
+  .control-box .device,
+  .control-box .metrics {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .power-box-1,
+  .power-box-2 {
+    flex-direction: column;
+  }
+
+  .power-box-1 .stat-card,
+  .power-box-2 .stat-card {
+    width: 100%;
+  }
+
+  .power-draw-box {
+    margin-top: 1rem;
+  }
+}
