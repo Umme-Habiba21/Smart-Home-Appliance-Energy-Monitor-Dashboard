@@ -123,14 +123,12 @@ exports.handler = async (event, context) => {
       const { deviceId, startTime, endTime } =
         event.queryStringParameters || {};
 
-      // FIX: Properly construct the query object
       let query = {};
 
       if (deviceId) {
         query.deviceId = deviceId;
       }
 
-      // Build timestamp query correctly to avoid undefined spread
       if (startTime || endTime) {
         query.timestamp = {};
         if (startTime) {
@@ -169,7 +167,6 @@ exports.handler = async (event, context) => {
     let statusCode = 500;
     let errorMessage = "Internal server error";
 
-    // More specific error handling
     if (error.message.includes("timeout")) {
       statusCode = 504;
       errorMessage = "Database operation timed out";
