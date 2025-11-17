@@ -327,8 +327,6 @@ function updateSummaryChart(data, timeframe) {
     values = hourlyValues;
   } else {
     // Show daily data for last7 or last30
-    console.log("Processing daily data...");
-
     if (Array.isArray(data) && data.length > 0) {
       labels = data.map((entry, index) => {
         console.log(`Daily entry ${index}:`, entry);
@@ -361,15 +359,12 @@ function updateSummaryChart(data, timeframe) {
 
   // Update the summary chart
   if (typeof summaryChart !== "undefined" && summaryChart) {
-    console.log("Updating summary chart...");
-    console.log("Chart labels:", labels);
-    console.log("Chart values:", values);
+    console.log("Updated Chart labels:", labels);
+    console.log("Updated Chart values:", values);
 
     summaryChart.data.labels = labels;
     summaryChart.data.datasets[0].data = values;
     summaryChart.update();
-
-    console.log("Chart updated successfully!");
   } else {
     console.error("Summary chart not found or not initialized!");
   }
