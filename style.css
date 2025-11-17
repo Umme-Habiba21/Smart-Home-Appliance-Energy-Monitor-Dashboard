@@ -119,6 +119,10 @@ html {
 .control-box .metrics {
   flex: 1 1 calc(50% - 0.75rem); /* 50% minus half the gap */
 
+  .power-box-0 {
+    display: flex;
+    justify-ccontent: space-between;
+  }
   .power-box-1 {
     display: flex;
     justify-content: space-between;
