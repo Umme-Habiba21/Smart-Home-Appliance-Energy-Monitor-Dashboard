@@ -66,7 +66,7 @@ exports.handler = async (event, context) => {
           endpoint: `/v2.0/cloud/thing/${deviceId}/shadow/properties`,
           method: "GET",
         },
-        // Method 2: Device status (traditional v1.0 but might still work)
+        // Method 2: Device status (traditional v1.0)
         {
           name: "Device Status (v1.0)",
           endpoint: `/v1.0/devices/${deviceId}/status`,
@@ -158,7 +158,7 @@ exports.handler = async (event, context) => {
         }
       }
 
-      // If not found in shadow, try traditional status
+      // If not found in shadow, then traditional status
       if (!toggleProperty) {
         const statusResponse = allResponses["Device Status (v1.0)"];
         if (statusResponse && statusResponse.success && statusResponse.result) {
@@ -210,7 +210,7 @@ exports.handler = async (event, context) => {
                 properties: [
                   {
                     code: switchCode,
-                    value: true, // Try to turn it ON
+                    value: true, // Turn it ON
                   },
                 ],
               },
@@ -348,11 +348,9 @@ exports.handler = async (event, context) => {
     const deviceId = event.queryStringParameters?.deviceId || DEVICES[0].id;
     const device = DEVICES.find((d) => d.id === deviceId) || DEVICES[0];
 
-    console.log("=== COMPREHENSIVE POWER DATA ANALYSIS ===");
-    console.log("Device ID:", deviceId);
     console.log("Device info:", device);
 
-    // Try multiple methods to get power data
+    // Multiple methods to get power data
     const powerDataMethods = [
       {
         name: "Shadow Properties (v2.0)",
@@ -418,7 +416,7 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // If we have power data, use it; otherwise use best available
+    // If power data available then use it; otherwise use best available
     let finalPowerData = bestPowerData?.data || {
       watts: 0,
       isDeviceOn: false,
@@ -427,7 +425,6 @@ exports.handler = async (event, context) => {
       switchState: null,
     };
 
-    console.log("=== FINAL POWER ANALYSIS ===");
     console.log("Selected method:", bestPowerData?.method || "None");
     console.log("Final power data:", finalPowerData);
 
@@ -437,7 +434,7 @@ exports.handler = async (event, context) => {
     const hourlyRate = kW * RATE_PER_KWH;
     const dailyCost = hourlyRate * 24;
 
-    // Prepare response
+    // Response
     const responseData = {
       watts: finalPowerData.watts,
       device: {
@@ -477,8 +474,6 @@ exports.handler = async (event, context) => {
       body: JSON.stringify(responseData),
     };
   } catch (error) {
-    console.error("=== COMPREHENSIVE API ERROR ===");
-    console.error("Error message:", error.message);
     console.error("Error stack:", error.stack);
 
     return {
@@ -499,6 +494,8 @@ function extractPowerData(methodName, response) {
   let rawPowerValue = null;
   let powerPropertyCode = null;
   let switchState = null;
+  let current = null;
+  let voltage = null;
 
   try {
     if (methodName === "Shadow Properties (v2.0)") {
@@ -527,6 +524,54 @@ function extractPowerData(methodName, response) {
         if (switchValue !== undefined) {
           switchState = switchValue;
           isDeviceOn = Boolean(switchValue);
+          break;
+        }
+      }
+
+      // --- Extract Current (mA) ---
+      const currentCandidates = [
+        "cur_current",
+        "current",
+        "electric_current",
+        "mcurrent",
+        "dp18",
+      ];
+      for (const code of currentCandidates) {
+        const currentValue =
+          deviceState[code]?.value ||
+          deviceState[code] ||
+          reportedState[code]?.value ||
+          reportedState[code] ||
+          desiredState[code]?.value ||
+          desiredState[code];
+
+        if (currentValue !== undefined) {
+          console.log(`Found current ('${code}'):`, currentValue);
+          current = currentValue; // already in mA
+          break;
+        }
+      }
+
+      // --- Extract Voltage (V ×10) ---
+      const voltageCandidates = [
+        "cur_voltage",
+        "voltage",
+        "electric_voltage",
+        "mv",
+        "dp20",
+      ];
+      for (const code of voltageCandidates) {
+        const voltageValue =
+          deviceState[code]?.value ||
+          deviceState[code] ||
+          reportedState[code]?.value ||
+          reportedState[code] ||
+          desiredState[code]?.value ||
+          desiredState[code];
+
+        if (voltageValue !== undefined) {
+          console.log(`Found voltage ('${code}'):`, voltageValue);
+          voltage = voltageValue / 10; // Tuya uses V × 10 format
           break;
         }
       }
@@ -611,7 +656,6 @@ function extractPowerData(methodName, response) {
       }
     } else if (methodName === "Device Properties") {
       console.log("Analyzing device properties/functions...");
-      // This might give us the available property codes
       if (response.result && Array.isArray(response.result)) {
         console.log("Available property codes:", response.result);
       }
@@ -622,6 +666,8 @@ function extractPowerData(methodName, response) {
 
   return {
     watts: Math.round(watts * 10) / 10,
+    current: current,
+    voltage: voltage,
     isDeviceOn,
     rawPowerValue,
     powerPropertyCode,
